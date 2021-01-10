@@ -1,14 +1,35 @@
 let cmPerRotation = 0
 let convertedRotations = 0
+let displayBlockCounter = 0
+let currentBlockIndex = 0
+let allBlocks: string[] = []
 let TargetLightValue = 0
 let proportionalConstant = 0
 let lightValue = 0
 let steeringValue = 0
 let findLineSpeed = 0
 let crawlSpeed = 0
+let list: number[] = []
 function convertCmToRotations (cm: number) {
     cmPerRotation = 13.345
     convertedRotations = cm / cmPerRotation
+}
+function updateBlockDisplay () {
+    brick.clearScreen()
+    displayBlockCounter = 1
+    for (let index = 0; index <= list.length - 1; index++) {
+        if (currentBlockIndex == displayBlockCounter) {
+            brick.showString("* " + allBlocks[index], index + 1)
+        } else {
+            brick.showString("  " + allBlocks[index], index + 1)
+        }
+        displayBlockCounter += 1
+    }
+}
+function setupAllBlocks () {
+    currentBlockIndex = 1
+    allBlocks = ["First Run", "Second Run", "Step 3", "Step 4"]
+    updateBlockDisplay()
 }
 function turnDegrees (degrees: number, speed: number) {
     sensors.gyro2.reset()
