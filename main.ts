@@ -1,35 +1,34 @@
-let cmPerRotation = 0
-let convertedRotations = 0
-let displayBlockCounter = 0
 let currentBlockIndex = 0
 let allBlocks: string[] = []
+let cmPerRotation = 0
+let convertedRotations = 0
+let lastBlockIndex = 0
 let TargetLightValue = 0
 let proportionalConstant = 0
 let lightValue = 0
 let steeringValue = 0
 let findLineSpeed = 0
+let displayBlockCounter = 0
 let crawlSpeed = 0
 let list: number[] = []
+function updateBlockIndex (increment: boolean) {
+    if (increment) {
+        if (currentBlockIndex < allBlocks.length) {
+            currentBlockIndex += 1
+        } else {
+            music.playSoundEffect(sounds.systemClick)
+        }
+    } else {
+        if (currentBlockIndex > 1) {
+            currentBlockIndex += -1
+        } else {
+            music.playSoundEffect(sounds.systemClick)
+        }
+    }
+}
 function convertCmToRotations (cm: number) {
     cmPerRotation = 13.345
     convertedRotations = cm / cmPerRotation
-}
-function updateBlockDisplay () {
-    brick.clearScreen()
-    displayBlockCounter = 1
-    for (let index = 0; index <= list.length - 1; index++) {
-        if (currentBlockIndex == displayBlockCounter) {
-            brick.showString("* " + allBlocks[index], index + 1)
-        } else {
-            brick.showString("  " + allBlocks[index], index + 1)
-        }
-        displayBlockCounter += 1
-    }
-}
-function setupAllBlocks () {
-    currentBlockIndex = 1
-    allBlocks = ["First Run", "Second Run", "Step 3", "Step 4"]
-    updateBlockDisplay()
 }
 function turnDegrees (degrees: number, speed: number) {
     sensors.gyro2.reset()
@@ -40,15 +39,50 @@ function turnDegrees (degrees: number, speed: number) {
     }
     sensors.gyro2.pauseUntilRotated(degrees)
 }
-brick.buttonUp.onEvent(ButtonEvent.Pressed, function () {
-    secondRun()
+brick.buttonDown.onEvent(ButtonEvent.Pressed, function () {
+    incrementBlockIndex()
 })
+brick.buttonUp.onEvent(ButtonEvent.Pressed, function () {
+    decrementBlockIndex()
+})
+function firstRun () {
+	
+}
 function deliverModel () {
     proFollowLineCm(65, 20)
     proFollowLineCm(35, 0)
     proFollowLineCm(55, 7)
     turnDegrees(-40, 50)
     motors.mediumA.run(50)
+}
+function runCurrentBlock () {
+    if (currentBlockIndex == 1) {
+        firstRun()
+    }
+    if (currentBlockIndex == 2) {
+        secondRun()
+    }
+}
+function incrementBlockIndex () {
+    updateBlockIndex(true)
+    updateBlockDisplay()
+}
+brick.buttonEnter.onEvent(ButtonEvent.Pressed, function () {
+    runCurrentBlock()
+    lastBlockIndex = currentBlockIndex
+    incrementBlockIndex()
+    if (currentBlockIndex == lastBlockIndex) {
+        music.playSoundEffect(sounds.expressionsFanfare)
+    }
+})
+function setupAllBlocks () {
+    currentBlockIndex = 1
+    allBlocks = ["First Run", "Second Run", "Step 3", "Step 4"]
+    updateBlockDisplay()
+}
+function decrementBlockIndex () {
+    updateBlockIndex(false)
+    updateBlockDisplay()
 }
 function proFollowLinesRotations (speed: number, rotations: number) {
     motors.largeB.clearCounts()
@@ -75,6 +109,18 @@ function findLowerLine () {
 function proFollowLineCm (speed: number, cm: number) {
     convertCmToRotations(cm)
     proFollowLinesRotations(speed, convertedRotations)
+}
+function updateBlockDisplay () {
+    brick.clearScreen()
+    displayBlockCounter = 1
+    for (let index = 0; index <= list.length - 1; index++) {
+        if (currentBlockIndex == displayBlockCounter) {
+            brick.showString("* " + allBlocks[index], index + 1)
+        } else {
+            brick.showString("  " + allBlocks[index], index + 1)
+        }
+        displayBlockCounter += 1
+    }
 }
 function slowPush () {
     crawlSpeed = 5
